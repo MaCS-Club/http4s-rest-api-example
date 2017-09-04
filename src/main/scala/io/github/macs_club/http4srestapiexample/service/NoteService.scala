@@ -5,26 +5,27 @@ import io.circe._
 import org.http4s._
 import org.http4s.circe._
 import io.circe.generic.auto._
-import org.http4s.server._
 import org.http4s.dsl._
-import scala.language.higherKinds
 import scalaz.concurrent.Task
 
-import io.github.macs_club.http4srestapiexample.domain._
-import io.github.macs_club.http4srestapiexample.repository._
+import io.github.macs_club.http4srestapiexample.domain.Note
+import io.github.macs_club.http4srestapiexample.repository.Repository
+import io.github.macs_club.http4srestapiexample.repository.impl.H2NoteRepository
 
-class NoteService(repository: Repository[Note,Task]) {
+object NoteService {
 	implicit def circeJsonDecoder[A](implicit decoder: Decoder[A]): EntityDecoder[A] = org.http4s.circe.jsonOf[A]
   implicit def circeJsonEncoder[A](implicit encoder: Encoder[A]): EntityEncoder[A] = org.http4s.circe.jsonEncoderOf[A]
 
+	val repository: Task[Repository[Note, Task]] = H2NoteRepository()
+
 	val service = HttpService {
-		case GET -> Root => repository.list >>= (Ok(_))
+		case GET -> Root => repository >>= (_.list) >>= (Ok(_))
 		case req @ POST -> Root => 	req.decode[Note]{ data =>
-			Ok(repository += data)
+			Ok(repository >>= (_ += data))
 		}
 		case req @ PUT -> Root => req.decode[Note]{ data =>
-			Ok(repository.update(data))
+			Ok(repository >>= (_ update data))
 		}
-		case DELETE -> Root / name => Ok(repository -= Note(name))
+		case DELETE -> Root / name => Ok(repository >>= (_ -= Note(name)))
 	}
 }

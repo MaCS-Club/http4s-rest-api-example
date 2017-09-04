@@ -8,11 +8,19 @@ import scalaz.concurrent.Task
 import io.github.macs_club.http4srestapiexample.domain.Note
 import io.github.macs_club.http4srestapiexample.repository.Repository
 
+object H2NoteRepository {
+	def apply() = Task {
+		val h2nr = new H2NoteRepository()
+		h2nr.init.unsafePerformSync
+		h2nr
+	}
+}
+
 class H2NoteRepository extends Repository[Note, Task]{
 
 	val xa = H2Transactor[Task]("jdbc:h2:mem:http4srestapiexample;DB_CLOSE_DELAY=-1", "h2username", "h2password")
 
-	override def init = {
+	private def init = {
 		val query = sql"""
 	     CREATE TABLE IF NOT EXISTS note (
 	       title VARCHAR(20) NOT NULL UNIQUE,
@@ -47,7 +55,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		xa >>= (query.transact(_))
 	}
 
-	override def list() = {
+	override def list = {
 		val query = sql"""
 				SELECT title, body
 				FROM note
