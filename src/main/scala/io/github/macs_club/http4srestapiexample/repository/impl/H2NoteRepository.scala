@@ -12,7 +12,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 
 	val xa = H2Transactor[Task]("jdbc:h2:mem:http4srestapiexample;DB_CLOSE_DELAY=-1", "h2username", "h2password")
 
-	def init = {
+	override def init = {
 		val query = sql"""
 	     CREATE TABLE IF NOT EXISTS note (
 	       title VARCHAR(20) NOT NULL UNIQUE,
@@ -22,7 +22,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		xa >>= (query.transact(_))
 	}
 
-	def +=(note: Note) = {
+	override def +=(note: Note) = {
 		val query = sql"""
 				INSERT INTO note (title, body)
 				VALUES (${note.title},${note.body})
@@ -30,7 +30,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		xa >>= (query.transact(_))
 	}
 
-	def update(note: Note) = {
+	override def update(note: Note) = {
 		val query = sql"""
 				UPDATE note
 				SET body = ${note.body}
@@ -39,7 +39,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		xa >>= (query.transact(_))
 	}
 
-	def -=(note: Note) = {
+	override def -=(note: Note) = {
 		val query = sql"""
 				DELETE FROM note
 				WHERE title = ${note.title}
@@ -47,7 +47,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		xa >>= (query.transact(_))
 	}
 
-	def list() = {
+	override def list() = {
 		val query = sql"""
 				SELECT title, body
 				FROM note
