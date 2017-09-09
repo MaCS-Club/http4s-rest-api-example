@@ -34,7 +34,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		val query = sql"""
 				INSERT INTO note (title, body)
 				VALUES (${note.title},${note.body})
-			""".update.run
+			""".update.withUniqueGeneratedKeys[Note]("title","body")
 		xa >>= (query.transact(_))
 	}
 
@@ -43,7 +43,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 				UPDATE note
 				SET body = ${note.body}
 				WHERE title = ${note.title}
-			""".update.run
+			""".update.withUniqueGeneratedKeys[Note]("title","body")
 		xa >>= (query.transact(_))
 	}
 
@@ -51,7 +51,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		val query = sql"""
 				DELETE FROM note
 				WHERE title = ${note.title}
-			""".update.run
+			""".update.run *> FC.unit
 		xa >>= (query.transact(_))
 	}
 
