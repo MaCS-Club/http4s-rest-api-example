@@ -31,19 +31,31 @@ class H2NoteRepository extends Repository[Note, Task]{
 	}
 
 	override def +=(note: Note) = {
-		val query = sql"""
+		val insertQ = sql"""
 				INSERT INTO note (title, body)
 				VALUES (${note.title},${note.body})
 			""".update.run
+    val selectQ = sql"""
+				SELECT title, body
+				FROM note
+        WHERE title = ${note.title}
+  		""".query[Note].unique
+		val query = insertQ *> selectQ
 		xa >>= (query.transact(_))
 	}
 
 	override def update(note: Note) = {
-		val query = sql"""
+		val updateQ = sql"""
 				UPDATE note
 				SET body = ${note.body}
 				WHERE title = ${note.title}
 			""".update.run
+		val selectQ = sql"""
+				SELECT title, body
+				FROM note
+        WHERE title = ${note.title}
+  		""".query[Note].unique
+		val query = updateQ *> selectQ
 		xa >>= (query.transact(_))
 	}
 
@@ -51,7 +63,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		val query = sql"""
 				DELETE FROM note
 				WHERE title = ${note.title}
-			""".update.run
+			""".update.run *> FC.unit
 		xa >>= (query.transact(_))
 	}
 
@@ -59,7 +71,7 @@ class H2NoteRepository extends Repository[Note, Task]{
 		val query = sql"""
 				SELECT title, body
 				FROM note
-			""".query[Note].process.list
+			""".query[Note].list
 		xa >>= (query.transact(_))
 	}
 }
