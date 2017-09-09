@@ -1,10 +1,10 @@
 organization := "io.github.macs-club"
 name := "http4s-rest-api-example"
 version := "0.0.1-SNAPSHOT"
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.3"
 
-val Http4sVersion = "0.15.11a"
-val DoobieVersion = "0.4.2"
+val Http4sVersion = "0.16.0a"
+val DoobieVersion = "0.4.4"
 
 libraryDependencies ++= Seq(
  "org.http4s"     %% "http4s-blaze-server" % Http4sVersion,
@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
  "org.tpolecat"   %% "doobie-specs2"       % DoobieVersion,
  "ch.qos.logback" %  "logback-classic"     % "1.2.1",
  // Optional for auto-derivation of JSON codecs
-  "io.circe" %% "circe-generic" % "0.6.1",
+  "io.circe" %% "circe-generic" % "0.8.0",
   // Optional for string interpolation to JSON model
-  "io.circe" %% "circe-literal" % "0.6.1"
+  "io.circe" %% "circe-literal" % "0.8.0"
 )
